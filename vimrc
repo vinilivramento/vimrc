@@ -2,7 +2,7 @@
 " VIM Configuration File            "
 " Author: Vinicius Livramento       "
 " Email: vinilivramento@gmail.com   "
-" Last Updated: 07/02/2017          "
+" Last Updated: 04/07/2017          "
 """""""""""""""""""""""""""""""""""""
 
 
@@ -33,6 +33,12 @@ Plugin 'majutsushi/tagbar'
 
 " visual plugin to show directory trees and navigate
 Plugin 'scrooloose/nerdtree'
+
+" Fuzzy search
+Plugin 'ctrlpvim/ctrlp.vim'
+
+" IndentLine guides
+Plugin 'Yggdroot/indentLine'
 
 call vundle#end()
 
@@ -148,6 +154,38 @@ set statusline+=%9*\ col:%03c\                            "Column number
 set statusline+=%0*\ \ %m%r%w\ %P\ \                      "Modified? Readonly? Top/bot.
 
 
+" ctrlp plugin shortcut for fuzzy finding
+let g:ctrlp_map = '<c-p>'
+let g:ctrlp_cmd = 'CtrlP'
+
+" when ctrlp is invoked without an explicit starting directory, it set the local directory
+let g:ctrlp_working_path_mode = 'ra'
+
+" ignore files and directories
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip     " MacOSX/Linux
+set wildignore+=*\\tmp\\*,*.swp,*.zip,*.exe  " Windows
+
+" ignore files to speedup ctrlp
+let g:ctrlp_custom_ignore = '\v[\/]\.(git|hg|svn)$'
+let g:ctrlp_custom_ignore = '\v[\/]\.(git|hg|svn)$'
+let g:ctrlp_custom_ignore = '\v\.(exe|so|dll)$'
+let g:ctrlp_custom_ignore = 'some_bad_symbolic_links'
+"let g:ctrlp_custom_ignore = {'dir':  '\v[\/]\.(git|hg|svn)$', 'file': '\v\.(exe|so|dll)$', 'link': 'some_bad_symbolic_links'}
+
+" custom file listing command
+let g:ctrlp_user_command = 'find %s -type f'        " MacOSX/Linux"
+
+" Use The Silver Searcher https://github.com/ggreer/the_silver_searcher
+if executable('ag')
+  " Use Ag over Grep
+  set grepprg=ag\ --nogroup\ --nocolor
+
+  " Use ag in CtrlP for listing files. Lightning fast and respects .gitignore
+  let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+endif
+
+" avoid clearing cache when close vim
+" let g:ctrlp_clear_cache_on_exit = 0
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Colors and Fonts
@@ -179,6 +217,7 @@ set ffs=unix,mac,dos
 set nobackup
 set nowb
 set noswapfile
+set nobackup
 set nowritebackup
 
 " persistent undo
@@ -226,13 +265,43 @@ set completeopt=menu,menuone
 " intelligent comments
 set comments=sl:/*,mb:\ *,elx:\ */
 
-
-"tagbar config
+" tagbar config
 let g:tagbar_autofocus = 1
 let g:tagbar_compact = 1
 let g:tagbar_autoclose = 1
+let g:tagbar_ctags_bin = $CTAGS_PATH
+set tags=tags;
 
+" vim indent guides for indentline plugin
+" set to green the indent line
+let g:indentLine_color_term = 23
+" Set the specific character for indent guide
+let g:indentLine_char = '|'
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Handling of large files
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" file is large from 50mb
+let g:LargeFile = 1024 * 1024 * 50
+augroup LargeFile 
+autocmd BufReadPre * let f=getfsize(expand("<afile>")) | if f > g:LargeFile || f == -2 | call LargeFile() | endif
+augroup END
+
+function LargeFile()
+" no syntax highlighting etc
+set eventignore+=FileType
+" save memory when other file is viewed
+setlocal bufhidden=unload
+" is read-only (write with :w new_filename)
+setlocal buftype=nowrite
+" no undo possible
+setlocal undolevels=-1
+" no swap files
+set noswapfile 
+" display message
+autocmd VimEnter *  echo "The file is larger than " . (g:LargeFile / 1024 / 1024) . " MB, so some options are changed (see .vimrc for details)."
+endfunction
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Key mappings
@@ -275,7 +344,7 @@ nmap <F9> :TagbarToggle<CR>
 
 "shortcuts to open nerdtree
 nnoremap <silent> <F8> :NERDTreeToggle<CR>
-map <C-n> :NERDTreeToggle<CR>
+"map <C-n> :NERDTreeToggle<CR>
 
 
 " Enhanced keyboard mappings
@@ -286,7 +355,7 @@ map <C-n> :NERDTreeToggle<CR>
 "imap <F2> <ESC>:w<CR>i
 
 " switch between header/source with F4
-map <F4> :e %:p:s,.h$,.X123X,:s,.cpp$,.h,:s,.X123X$,.cpp,<CR>
+map <F4> :e %:p:s,.hpp$,.X123X,:s,.cpp$,.hpp,:s,.X123X$,.cpp,<CR>
 " recreate tags file with F5
 map <F5> :!ctags -R –c++-kinds=+p –fields=+iaS –extra=+q .<CR>
 
@@ -305,6 +374,21 @@ map <C-/> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
 "Tags tag to open selection with multiple tags of the same name are present. Otherwise go to the definition.
 map <C-]> g<C-]>
 
-set tags=tags;
+"remap autocomplete shortcut from Ctrl-P to Ctrl-space
+"inoremap <C-p> <>
 
+" disable entering in replace mode when pressing insert twice. You can still enter in replace mode using R
+imap <Insert> <Nop>
+inoremap <S-Insert> <Insert>
 
+" maps from: pazams/d-is-for-delete
+" The idea is to remap the delete commands to put them in the black hole register
+" This avoids that delete copies the deleted line/block to the buffer
+nnoremap x "_x
+nnoremap X "_X
+nnoremap d "_d
+nnoremap D "_D
+vnoremap d "_d
+nnoremap <leader>d ""d
+nnoremap <leader>D ""D
+vnoremap <leader>d ""d
