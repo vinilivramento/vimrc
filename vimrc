@@ -2,7 +2,7 @@
 " VIM Configuration File            "
 " Author: Vinicius Livramento       "
 " Email: vinilivramento@gmail.com   "
-" Last Updated: 04/07/2017          "
+" Last Updated: 08/08/2017          "
 """""""""""""""""""""""""""""""""""""
 
 
@@ -39,6 +39,15 @@ Plugin 'ctrlpvim/ctrlp.vim'
 
 " IndentLine guides
 Plugin 'Yggdroot/indentLine'
+
+" Alignment plugin
+Plugin 'Tabular'
+
+" Auto-complete and syntatic check
+Plugin 'Valloric/YouCompleteMe'
+
+"" Syntatic check
+"Plugin 'vim-syntastic/syntastic'
 
 call vundle#end()
 
@@ -226,6 +235,12 @@ set undofile
 set undolevels=1000
  "maximum number lines to save for undo on a buffer reload
 set undoreload=10000
+" undo directory
+set undodir=~/.vim/.undo//
+" backup directory
+set backupdir=~/.vim/.backup//
+" swap directory
+set directory=~/.vim/.swp//
 
 
 " Since Vim will source .vimrc from any directory you run Vim from, this is
@@ -302,6 +317,43 @@ set noswapfile
 " display message
 autocmd VimEnter *  echo "The file is larger than " . (g:LargeFile / 1024 / 1024) . " MB, so some options are changed (see .vimrc for details)."
 endfunction
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Syntatic and spell check
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"set statusline+=%#warningmsg#
+"set statusline+=%{SyntasticStatuslineFlag()}
+"set statusline+=%*
+
+"let g:syntastic_loc_list_height = 3
+"let g:syntastic_always_populate_loc_list = 1
+"let g:syntastic_auto_loc_list = 1
+"let g:syntastic_check_on_open = 1
+"let g:syntastic_check_on_wq = 0
+
+"let g:syntastic_python_checkers = ['pylint']
+"let g:syntastic_tex_checkers = ['lacheck', 'text/language_check']
+
+let g:ycm_python_binary_path = '/usr/bin/python3'
+let g:ycm_global_ycm_extra_conf = '~/.vim/.ycm_extra_conf.py'
+
+" Default is 2
+let g:ycm_min_num_of_chars_for_completion = 3
+" Default is 50
+let g:ycm_max_num_candidates = 20
+
+" Should point to the version used to compile YCM
+let g:ycm_server_python_interpreter = '/usr/bin/python2'
+
+"" Default is 1. Disable auto-trigger for completion. Can be triggered by <C-Space>
+"let g:ycm_auto_trigger = 1
+"" Default 0
+"let g:ycm_autoclose_preview_window_after_completion = 0
+
+" Spell checking
+set spelllang=en_us             " English as default language
+set complete+=kspell            " Word completion
+set nospell                     " Disable by default
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Key mappings
@@ -392,3 +444,6 @@ vnoremap d "_d
 nnoremap <leader>d ""d
 nnoremap <leader>D ""D
 vnoremap <leader>d ""d
+
+" Toggle spell check
+noremap <F7> :setlocal spell!<CR>
