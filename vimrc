@@ -2,14 +2,16 @@
 " VIM Configuration File            "
 " Author: Vinicius Livramento       "
 " Email: vinilivramento@gmail.com   "
-" Last Updated: 05/15/2018          "
+" Last Updated: 06/04/2018          "
 """""""""""""""""""""""""""""""""""""
+
+" change leader to ,
+let mapleader=","
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Configure plugins
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 source ~/.vim/configs/plugins.vim
-
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => General
@@ -21,11 +23,9 @@ set nocompatible
 set shell=bash
 
 " Enable filetype plugins
+filetype on                 
 filetype plugin on
 filetype indent on
-
-" required by vundle
-filetype off                 
 
 " automatically update when a file is changed outside
 set autoread
@@ -46,7 +46,7 @@ set scrolloff=4
 set wildmenu
 set wildmode=longest:full
 " ignore files and directories
-set wildignore+=*/tmp/*,*.so,*,*~,*.pyc,*.bak,*.class,.swp,*.zip 
+set wildignore+=*/tmp/*,*/.cache/*,*/.git/*,*.so,*~,*.pyc,*.bak,*.class,*.swp,*.zip,*.pdf 
 set wildignore+=*\\tmp\\*,*.exe  " Windows
 
 " Always show a status bar
@@ -193,6 +193,14 @@ set comments=sl:/*,mb:\ *,elx:\ */
 set spelllang=en_us             " English as default language
 set complete+=kspell            " Word completion
 set nospell                     " Disable by default
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Tags  
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Searches for tags file in cur directory and up until HOME
+set tags=./tags,tags;$HOME
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Handling large files 
