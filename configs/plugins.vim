@@ -75,7 +75,15 @@ map <F5> :IHV<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Auto format 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" When using clang-format and a .clang-format config file, 
+" an interactive guide can be found in https://clangformat.com/
+" and https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+" Format selected block
 vnoremap <C-a> :Autoformat<CR>
+
+" Format the whole file
+map <C-@>a :<esc>ggVG:Autoformat<CR>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => ALE -  Asynchronous Syntatic checking
@@ -99,6 +107,8 @@ let g:airline#extensions#ale#enabled = 1
 
 let g:ale_completion_enabled = 1
 let g:ale_completion_max_suggestions = 10
+
+let g:ale_cpp_clang_options = "-std=c++14 -Wall -Werror" 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Ctags Bar 
