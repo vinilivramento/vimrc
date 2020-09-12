@@ -60,6 +60,9 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 " better vim highlighting
 Plug 'octol/vim-cpp-enhanced-highlight'
 
+" Git integration 
+Plug 'tpope/vim-fugitive'
+
 " Initialize plugin system
 call plug#end()
 
@@ -168,7 +171,7 @@ syntax enable
 set t_Co=256
 
 " dark color scheme
-colorscheme gruvbox
+colorscheme monokai_pro
 set background=dark
 
 " set UTF-8 encoding
@@ -269,6 +272,14 @@ function! s:check_back_space() abort
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugin AsyncRun
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -280,15 +291,6 @@ let g:asyncrun_open = 6
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 let g:alternateSearchPath = 'sfr:../source,sfr:../src,sfr:../include,sfr:../inc'
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Plugin Auto format 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-"disable the fallback to vim's indent file, retabbing and removing trailing whitespace, set the following variables to 0.
-let g:autoformat_autoindent = 0
-let g:autoformat_retab = 0
-let g:autoformat_remove_trailing_spaces = 0
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugin ALE -  Asynchronous Syntatic checking
@@ -309,6 +311,12 @@ let g:ale_set_quickfix = 1
 
 "Enable warning through vim-airline
 let g:airline#extensions#ale#enabled = 1
+
+" Enable lint only when saving file
+let g:ale_lint_on_save = 1
+let g:ale_lint_on_test_changed = 'never' 
+let g:ale_lint_on_insert_leave = 0 
+let g:ale_lint_on_enter = 0 
 
 """"""""""""""""""""""""""""""
 " => Plugin IndentLine 
@@ -353,13 +361,18 @@ let g:airline_solarized_bg='dark'
 set laststatus=2
 
 let g:airline_powerline_fonts = 1                           " Use Powerline fonts to show beautiful symbols
-let g:airline_inactive_collapse = 0                         " Do not collapse the status line while having multiple windows
+let g:airline_inactive_collapse = 1                         " Collapse the status line while having multiple windows
 
 let g:airline#extensions#whitespace#enabled = 0             " Do not check for whitespaces
 let g:airline#extensions#capslock#enabled = 1               " Enable capslock check 
 let g:airline#extensions#branch#enabled = 1                 " Enable Git client integration
 let g:airline#extensions#tagbar#enabled = 1                 " Enable Tagbar integration
 let g:airline#extensions#hunks#enabled = 1                  " Enable Git hunks integration
+
+let g:airline#extensions#coc#enabled = 1                    " coc-vim integration
+
+let g:airline#extensions#tabline#enabled = 1                " buffer tabs 
+let g:airline#extensions#tabline#formatter = 'unique_tail'  " dont show filepath, just filename 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugin Tagbar plugin
@@ -376,6 +389,17 @@ let g:tagbar_autoclose = 1
 let g:cpp_class_scope_highlight = 1
 let g:cpp_member_variable_highlight = 1
 let g:cpp_class_decl_highligh = 1
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Plugin FZF
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+command! -bang -nargs=* Rg
+  \ call fzf#vim#greo(
+  \   "rg --column --line-number --no-heading --color=always --smart-case -g '!{.git, node_modules}*' -g '!{*.o*}' -g '!{*.clangd*}' -g '!{*build*}/' -g '!*cmake' ".shellescape(<q-args>), 1
+  \ <bang>0 ? fzf#vim#with_preview('up:60%')
+  \         : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \ <bang>0)
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugin coc.nvim 
@@ -401,6 +425,9 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
+" Goto definition with left click
+nmap <silent> <C-LeftMouse> <Plug>(coc-definition)<CR>
+
 " Use K to show documentation in preview window
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 
@@ -411,11 +438,52 @@ nmap <leader>rn <Plug>(coc-rename)
 xmap <leader>f  <Plug>(coc-format-selected)
 nmap <leader>f  <Plug>(coc-format-selected)
 
+" Remap for do codeAction of current line
+nmap <leader>ac  <Plug>(coc-codeaction)
+
+" Remap for code fix 
+nmap <leader>qq  <Plug>(coc-fix-current)
+
 " Use `:Format` to format current buffer
 command! -nargs=0 Format :call CocAction('format')
 
+" Format when save
+autocmd BufWritePre * call CocAction('format')
+
 " use `:OR` for organize import of current buffer
 command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organizeImport')
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => TermDebug configuration 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+let g:check_gdb_works = 0
+let g:termdebug_popup = 0
+let g:termdebug_wide  = 163 
+
+function! InvokeTermDebugOnCurrentFile()
+    "expand tail:root
+    let executableFile = expand("%:t:r")
+    let path = "./build/test/unit/" .executableFile
+    execute 'Termdebug' . path
+endfunction
+
+" Init term debug
+nnoremap <silent> <leader>db :packadd termdebug <CR> :call InvokeTermDebugOnCurrentFile()<CR>
+
+" Break on debug
+nnoremap <silent> <leader>b      :Break<CR>
+" Step on debug
+nnoremap <silent> <leader>s      :Step<CR>
+" Continue on debug
+nnoremap <silent> <leader>c      :Continue<CR>
+" Run on debug
+nnoremap <silent> <leader>r      :Run<CR>
+" Over(next) on debug
+nnoremap <silent> <leader>o      :Over<CR>
+" Finish on debug
+nnoremap <silent> <leader>f      :Finish<CR>
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => General Key mappings
@@ -465,9 +533,10 @@ nnoremap Y y$
 " yank always yanks the whole word
 nnoremap yw yiw
 
-" Useful mappings for managing tabs
-nnoremap <Tab> :tabnext<CR> 
-nnoremap <S-Tab> :tabprevious<CR>
+" Useful mappings for managing buffers 
+nnoremap <silent><Tab>       :bn<CR> 
+nnoremap <silent><S-Tab>     :bp<CR> 
+nnoremap <silent><Leader>q   :bd<CR> 
 
 " Quickly edit/reload the vimrc file
 nnoremap <silent> <leader>ev :e $MYVIMRC<CR>
@@ -479,11 +548,6 @@ nnoremap <leader><leader>s :terminal<CR>
 
 " Open most-recently used files plugin
 nnoremap <Leader>m :MRU<CR> 
-
-" Format selected block
-vnoremap <C-a> :Autoformat<CR>
-" Format the whole file
-nnoremap <C-@>a :<esc>ggVG:Autoformat<CR>
 
 " Fuzzy file search
 nnoremap <silent> <C-p> :Files<Cr>
