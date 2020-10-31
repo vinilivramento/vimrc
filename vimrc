@@ -393,13 +393,15 @@ let g:cpp_class_decl_highligh = 1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugin FZF
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+set rtp+=~/.fzf
 
-command! -bang -nargs=* Rg
-  \ call fzf#vim#greo(
-  \   "rg --column --line-number --no-heading --color=always --smart-case -g '!{.git, node_modules}*' -g '!{*.o*}' -g '!{*.clangd*}' -g '!{*build*}/' -g '!*cmake' ".shellescape(<q-args>), 1
-  \ <bang>0 ? fzf#vim#with_preview('up:60%')
-  \         : fzf#vim#with_preview('right:50%:hidden', '?'),
+command! -bang -nargs=* Rg 
+  \ call fzf#vim#grep(
+  \ "rg --column --line-number --no-heading --color=always --fixed-strings --smart-case --hidden --follow -g '!{.git, node_modules}*' -g '!{*.o*}' -g '!{*.clangd*}' -g '!{*build*}/' -g '!*cmake' ".shellescape(<q-args>), 1,
+  \ <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
+  \         : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', '?'),
   \ <bang>0)
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugin coc.nvim 
